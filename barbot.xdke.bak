@@ -1,0 +1,111 @@
+{
+  "project": {
+    "projectSettingsVersion": "3.0.0",
+    "initialAutoPluginCount": 0,
+    "currentBuildConfiguration": "Android",
+    "projectFiles": {},
+    "projectDirectories": {}
+  },
+  "editorTab": {
+    "currentEditorMode": 0
+  },
+  "iot-tab": {
+    "fileStatus": {
+      "404.html": {
+        "previousModTime": 1468406646665,
+        "modified": 1468406646665,
+        "seen": true,
+        "name": "404.html"
+      },
+      "README.md": {
+        "previousModTime": 1468500138218,
+        "modified": 1468500138218,
+        "seen": true,
+        "name": "README.md"
+      },
+      "barbot.xdk": {
+        "previousModTime": 1468500942806,
+        "modified": 1468500942806,
+        "seen": true,
+        "name": "barbot.xdk"
+      },
+      "barbot.xdke": {
+        "previousModTime": 1468834503101,
+        "modified": 1468834503101,
+        "seen": true,
+        "name": "barbot.xdke"
+      },
+      "icon.png": {
+        "previousModTime": 1468500138218,
+        "modified": 1468500138218,
+        "seen": true,
+        "name": "icon.png"
+      },
+      "index.html": {
+        "previousModTime": 1468765985831,
+        "modified": 1468765985831,
+        "seen": true,
+        "name": "index.html"
+      },
+      "main.js": {
+        "previousModTime": 1468765985831,
+        "modified": 1468765985831,
+        "seen": true,
+        "name": "main.js"
+      },
+      "package.json": {
+        "previousModTime": 1468500945540,
+        "modified": 1468500945540,
+        "seen": true,
+        "name": "package.json"
+      },
+      "xdk-publish-meta-data.json": {
+        "previousModTime": 1468500138610,
+        "modified": 1468500138610,
+        "seen": true,
+        "name": "xdk-publish-meta-data.json"
+      },
+      "xdk/project-info.json": {
+        "previousModTime": 1468500138397,
+        "modified": 1468500138397,
+        "seen": true,
+        "name": "xdk/project-info.json"
+      },
+      "coctails.json": {
+        "previousModTime": 1468763978308,
+        "modified": 1468763978308,
+        "seen": true,
+        "name": "coctails.json"
+      },
+    },
+    "boardFileStatus": {
+      "404.html": {
+        "previousModTime": 1468834573212
+      },
+      "README.md": {
+        "previousModTime": 1468834573212
+      },
+      "icon.png": {
+        "previousModTime": 1468834573212
+      },
+      "index.html": {
+        "previousModTime": 1468834573212
+      },
+      "main.js": {
+        "previousModTime": 1468834573212
+      },
+      "package.json": {
+        "previousModTime": 1468834573212
+      },
+      "xdk-publish-meta-data.json": {
+        "previousModTime": 1468834573212
+      },
+      "xdk/project-info.json": {
+        "previousModTime": 1468834573212
+      },
+      "coctails.json": {
+        "previousModTime": 1468834573212
+      },
+    }
+  }
+}

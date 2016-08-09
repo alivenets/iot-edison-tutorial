@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+  <meta charset="utf-8">
+  <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+   
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Barbot - nau-ra.ru</title>
+
+  <!-- Bootstrap -->
+  <link rel="stylesheet" type="text/css" href="assets/css/bootstrap.css">
+
+  <!-- Main Style -->
+  <link rel="stylesheet" type="text/css" href="assets/css/main.css">
+
+  <!-- Responsive Style -->
+  <link rel="stylesheet" type="text/css" href="assets/css/responsive.css">
+
+  <!--Icon Font-->
+  <link rel="stylesheet" media="screen" href="assets/fonts/font-awesome/font-awesome.min.css" />
+
+
+  <!-- Extras -->
+  <link rel="stylesheet" type="text/css" href="assets/extras/animate.css">
+
+
+  <!-- jQuery Load -->
+  <script src="assets/js/jquery-min.js"></script>
+  <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+
+  <!--[if lt IE 9]>
+          <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+          <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+    
+ <!--  твой скрипт -->
+  
+  <script>
+
+    var prev_state = -1;
+     
+    window.setInterval(getState, 500);
+     
+    function initCoctailList()
+    {
+         var form = document.getElementById("coctail_list");
+         getState();
+    }
+     
+     function mark(id, prefix, status)
+     {
+         var element = document.getElementById(id);
+         
+         if(status === 1)
+         {
+           if (!element.classList.contains(prefix + "ready") )
+           {
+              element.classList.add(prefix + "ready");
+           }
+             
+           if (element.classList.contains(prefix + "busy") )
+           {
+              element.classList.remove(prefix + "busy");
+           }
+
+           if (element.classList.contains(prefix + "error") )
+           {
+              element.classList.remove(prefix + "error");
+           }
+         }
+         else if(status === 2)
+         {
+           if (element.classList.contains(prefix + "ready") )
+           {
+              element.classList.remove(prefix + "ready");
+           }
+             
+           if (!element.classList.contains(prefix + "busy") )
+           {
+              element.classList.add(prefix + "busy");
+           }
+
+           if (element.classList.contains(prefix + "error") )
+           {
+              element.classList.remove(prefix + "error");
+           }
+         }
+         else if (status === 3)
+         {
+           if (element.classList.contains(prefix + "ready") )
+           {
+              element.classList.remove(prefix + "ready");
+           }
+             
+           if (element.classList.contains(prefix + "busy") )
+           {
+              element.classList.remove(prefix + "busy");
+           }
+
+           if (!element.classList.contains(prefix + "error") )
+           {
+              element.classList.add(prefix + "error");
+           }
+         }
+     }
+     
+    function getState() 
+    {
+        var request = new XMLHttpRequest();
+        request.onreadystatechange = function() {
+        if (request.readyState == 4 && request.status == 200) 
+        {
+            var data = JSON.parse(request.responseText);
+          
+            var element = document.getElementById("state");
+          
+            mark("glass",  "g_", data.state_code);
+            
+            mark("bottle1", "b_", data.bottle1);
+            mark("bottle2", "b_", data.bottle2);
+            mark("bottle3", "b_", data.bottle3);
+            mark("bottle4", "b_", data.bottle4);
+            mark("bottle5", "b_", data.bottle5);
+            mark("bottle6", "b_", data.bottle6);
+      
+            for(var i = 0; i < 6; ++i)
+            {
+               var btn = document.getElementById("make_coctail_" + i);
+               btn.disabled = (data.state_code != 1);
+            }
+            
+            var need_show = ((data.state_code == 1) && (prev_state == 2));
+            prev_state = data.state_code;
+            
+            if(need_show)
+            {
+                for(var i = 0; i < 6; ++i)
+                {
+                    var btn = document.getElementById("make_coctail_" + i);
+                    btn.classList.remove("pressed");
+                }
+                
+                alert("Заберите свой коктейль");
+            }
+        }
+    }
+    
+    request.open('GET', 'http://192.168.0.13/state', true);
+    request.send();
+  }
+     
+    function makeCoctail(CocId)
+    {
+        var request = new XMLHttpRequest();
+        request.onreadystatechange = function() {
+        
+            if (request.readyState == 4 && request.status == 200) {
+                var data = JSON.parse(request.responseText);
+          
+                var element = document.getElementById("state");
+                element.textContent = data.state;
+          
+                var btn = document.getElementById("make_coctail");
+                btn.disabled = (data.state_code != 1);
+            }
+        };
+        
+        var btn_pressed = document.getElementById("make_coctail_" + CocId);
+        btn_pressed.classList.add("pressed");
+        
+        request.open('GET', 'http://192.168.0.13/index.html?' + "coctail=" + CocId, true);
+        request.send();
+     }
+ </script>
+    
+
+</head>
+
+<body onload="getState()">
+  <!-- Nav Menu Section -->
+  <div class="logo-menu">
+    <nav class="navbar navbar-default">
+      <div class="container">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header col-md-3">
+         <!--  <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button> -->
+          <a class="navbar-brand" href="index.html"><img src="favicon.ico" alt=""><!-- i class="fa fa-fa fa-cubes"> </i>-->BarBot</a>
+        </div>
+
+       <!--  <div class="collapse navbar-collapse" id="navbar">
+          <ul class="nav navbar-nav pull-right">
+            <li><a href="">Коктейль 1</a>
+            </li>
+            <li><a href="">Коктейль 2</a>
+            </li>
+            <li><a href="">Коктейль 3</a>
+            </li>
+            <li><a href="">Коктейль 4</a>
+            </li>
+          </ul> -->
+        </div>
+      </div>
+    </nav>
+  </div>
+
+
+  <section id="features">
+    <div class="container">
+      <div class="row">
+        <h1 class="title-small wow tada">Bar Bot</h1>
+        <div class="col-md-12 text-center">
+		
+		
+		
+          <button class="btn btn-border btn-lg wow fadeInLeft animated" id="make_coctail_0" onclick="makeCoctail(0)" data-wow-offset="10" href="#"><i class="fa fa-check-circle "></i>Коктейль 1</button>
+		  
+		 
+		  
+          <button class="btn btn-border btn-lg wow fadeInDown animated" id="make_coctail_1" onclick="makeCoctail(1)" data-wow-offset="10" href="#"><i class="fa fa-check-circle "></i>Коктейль 2</button>
+		  
+		  
+		   <button class="btn btn-border btn-lg wow fadeInRight animated" id="make_coctail_2" onclick="makeCoctail(2)" data-wow-offset="10" href="#"><i class="fa fa-check-circle "></i>Коктейль 3</button>
+			
+			
+		  
+        </div>
+		<div class="col-md-12 text-center">
+		
+		
+          <button class="btn btn-border btn-lg wow fadeInLeft animated" id="make_coctail_3" onclick="makeCoctail(3)" data-wow-offset="10" href="#"><i class="fa fa-check-circle "></i>Коктейль 4</button>
+		  
+		  
+		  <button class="btn btn-border btn-lg wow fadeInDown animated" id="make_coctail_4" onclick="makeCoctail(4)" data-wow-offset="10" href="#"><i class="fa fa-check-circle "></i>Коктейль 5</button>
+			
+			
+          <button class="btn btn-border btn-lg wow fadeInRight animated" id="make_coctail_5" onclick="makeCoctail(5)" data-wow-offset="10" href="#"><i class="fa fa-check-circle "></i>Коктейль 6</button>
+		  
+		  
+		 <!--  левые бутылки -->
+		  
+        </div>
+        <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4">
+          <div class="content-left text-right wow fadeInLeft animated" data-wow-offset="10">
+            <div class="box-item left">
+              <span id="bottle1" class="icon b_ready">
+                <i  class="fa fa-flask"></i>
+              </span>
+              <div class="text">
+                <h4>ингредиент</h4>
+                <p>1</p>
+              </div>
+            </div>
+            <div class="box-item left">
+              <span id="bottle2" class="icon b_ready">
+                <i class="fa fa-flask"></i>
+              </span>
+              <div class="text">
+                <h4>ингредиент</h4>
+                <p>2</p>
+              </div>
+            </div>
+            <div class="box-item left">
+              <span id="bottle3" class="icon b_ready">
+                <i class="fa fa-flask"></i>
+              </span>
+              <div class="text">
+                <h4>ингредиент</h4>
+                <p>3</p>
+              </div>
+            </div>
+          </div>
+        </div>
+		
+		<!-- левые бутылки -->
+		
+	<!-- 	рюмка  статус  -->
+		
+		
+        <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4">
+          <div class="show-box wow fadeInDown animated" data-wow-offset="10">
+            <span  class="icon">
+                <i id="glass" class="fa fa-glass bottle g_ready"></i>
+              </span>
+          </div>
+        </div>
+		
+		<!-- рюмка -->
+		
+		<!-- правые бутылки -->
+		
+        <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4">
+          <div class="content-right text-left wow fadeInRight animated" data-wow-offset="10">
+            <div class="box-item right">
+              <span id="bottle4" class="icon b_ready">
+                <i class="fa fa-flask"></i>
+              </span>
+              <div class="text">
+                <h4>ингредиент</h4>
+                <p>4</p>
+              </div>
+            </div>
+            <div class="box-item right">
+              <span id="bottle5" class="icon b_ready">
+                <i class="fa fa-flask"></i>
+              </span>
+              <div class="text">
+                <h4>ингредиент</h4>
+                <p>5</p>
+              </div>
+            </div>
+            <div class="box-item right">
+              <span id="bottle6" class="icon b_ready">
+                <i class="fa fa-flask"></i>
+              </span>
+              <div class="text">
+                <h4>ингредиент</h4>
+                <p>6</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  
+ 
+ 
+ 
+ 
+ 
+
+  <!-- Bootstrap JS -->
+  <script src="assets/js/bootstrap.js"></script>
+  <!-- WOW JS plugin for animation -->
+  <script src="assets/js/wow.js"></script>
+  <!-- All JS plugin Triggers -->
+  <script src="assets/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,75 @@
+[
+  {
+    "name": "Клапан 1",
+    "formula": [
+      { 
+        "bottle": 1,
+        "duration": 10000
+      },
+      {
+        "bottle": 3,
+        "duration": 10000
+      },
+      {
+        "bottle": 5,
+        "duration": 1000
+      },
+      {
+        "bottle": 1,
+        "duration": 5000
+      }
+
+
+
+    ]
+  },
+  {
+    "name": "Клапан 2",
+    "formula": [
+      {
+        "bottle": 2,
+        "duration": 10000
+      }
+    ]
+  },
+  {
+    "name": "Клапан 3",
+    "formula": [
+      {
+        "bottle": 3,
+        "duration": 10000
+      }
+    ]
+  }
+,
+  {
+    "name": "Клапан 4",
+    "formula": [
+      {
+        "bottle": 4,
+        "duration": 10000
+      }
+    ]
+  }
+,
+  {
+    "name": "Клапан 5",
+    "formula": [
+      {
+        "bottle": 5,
+        "duration": 10000
+      }
+    ]
+  }
+,
+  {
+    "name": "Клапан 6",
+    "formula": [
+      {
+        "bottle": 6,
+        "duration": 10000
+      }
+    ]
+  }
+
+]
