@@ -26,8 +26,8 @@
         "name": "barbot.xdk"
       },
       "barbot.xdke": {
-        "previousModTime": 1469699033088,
-        "modified": 1469699033088,
+        "previousModTime": 1471280850575,
+        "modified": 1471280850575,
         "seen": true,
         "name": "barbot.xdke"
       },
@@ -38,8 +38,8 @@
         "name": "barbot.xdke.bak"
       },
       "coctails.json": {
-        "previousModTime": 1469553395130,
-        "modified": 1469553395130,
+        "previousModTime": 1471277394759,
+        "modified": 1471277394759,
         "seen": true,
         "name": "coctails.json"
       },
@@ -50,14 +50,14 @@
         "name": "icon.png"
       },
       "index.html": {
-        "previousModTime": 1469620062524,
-        "modified": 1469620062524,
+        "previousModTime": 1471280849428,
+        "modified": 1471280849428,
         "seen": true,
         "name": "index.html"
       },
       "main.js": {
-        "previousModTime": 1469628475282,
-        "modified": 1469628475282,
+        "previousModTime": 1471280977817,
+        "modified": 1471280977817,
         "seen": true,
         "name": "main.js"
       },
@@ -240,113 +240,26 @@
         "modified": 1469620852000,
         "seen": true,
         "name": "button_pressed.png"
+      },
+      "bottles.json": {
+        "previousModTime": 1471279030615,
+        "modified": 1471279030615,
+        "seen": true,
+        "name": "bottles.json"
+      },
+      "TODO.md": {
+        "previousModTime": 1471276197193,
+        "modified": 1471276197193,
+        "seen": true,
+        "name": "TODO.md"
       }
     },
     "boardFileStatus": {
-      "404.html": {
-        "previousModTime": 1469699040929
-      },
-      "README.md": {
-        "previousModTime": 1469699040929
-      },
-      "coctails.json": {
-        "previousModTime": 1469699040929
-      },
-      "icon.png": {
-        "previousModTime": 1469699040929
-      },
       "index.html": {
-        "previousModTime": 1469699040929
+        "previousModTime": 1471280979291
       },
       "main.js": {
-        "previousModTime": 1469699040929
-      },
-      "package.json": {
-        "previousModTime": 1469699040929
-      },
-      "xdk-publish-meta-data.json": {
-        "previousModTime": 1469699040929
-      },
-      "xdk/project-info.json": {
-        "previousModTime": 1469699040929
-      },
-      "assets/css/app.css": {
-        "previousModTime": 1469699040929
-      },
-      "assets/css/bootstrap.css": {
-        "previousModTime": 1469699040929
-      },
-      "assets/css/main.css": {
-        "previousModTime": 1469699040929
-      },
-      "assets/css/responsive.css": {
-        "previousModTime": 1469699040929
-      },
-      "assets/extras/animate.css": {
-        "previousModTime": 1469699040929
-      },
-      "assets/fonts/glyphicons-halflings-regular.eot": {
-        "previousModTime": 1469699040929
-      },
-      "assets/fonts/glyphicons-halflings-regular.svg": {
-        "previousModTime": 1469699040929
-      },
-      "assets/fonts/glyphicons-halflings-regular.ttf": {
-        "previousModTime": 1469699040929
-      },
-      "assets/fonts/glyphicons-halflings-regular.woff": {
-        "previousModTime": 1469699040929
-      },
-      "assets/fonts/font-awesome/FontAwesome.otf": {
-        "previousModTime": 1469699040929
-      },
-      "assets/fonts/font-awesome/font-awesome.min.css": {
-        "previousModTime": 1469699040929
-      },
-      "assets/fonts/font-awesome/fontawesome-webfont.eot": {
-        "previousModTime": 1469699040929
-      },
-      "assets/fonts/font-awesome/fontawesome-webfont.svg": {
-        "previousModTime": 1469699040929
-      },
-      "assets/fonts/font-awesome/fontawesome-webfont.ttf": {
-        "previousModTime": 1469699040929
-      },
-      "assets/fonts/font-awesome/fontawesome-webfont.woff": {
-        "previousModTime": 1469699040929
-      },
-      "assets/img/backgrounds/feature-bg.jpg": {
-        "previousModTime": 1469699040929
-      },
-      "assets/img/backgrounds/hero-bg.jpg": {
-        "previousModTime": 1469699040929
-      },
-      "assets/img/features/graph.png": {
-        "previousModTime": 1469699040929
-      },
-      "assets/img/features/iPhone.png": {
-        "previousModTime": 1469699040929
-      },
-      "assets/js/bootstrap.js": {
-        "previousModTime": 1469699040929
-      },
-      "assets/js/jquery-min.js": {
-        "previousModTime": 1469699040929
-      },
-      "assets/js/main.js": {
-        "previousModTime": 1469699040929
-      },
-      "assets/js/smooth-scroll.js": {
-        "previousModTime": 1469699040929
-      },
-      "assets/js/wow.js": {
-        "previousModTime": 1469699040929
-      },
-      "favicon.ico": {
-        "previousModTime": 1469699040929
-      },
-      "button_pressed.png": {
-        "previousModTime": 1469699040929
+        "previousModTime": 1471280979291
       }
     }
   }

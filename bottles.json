@@ -1,0 +1,26 @@
+[
+    {
+        "name": "Клапан 1",
+        "pinIndex": 2
+    },
+    {
+        "name": "Клапан 2",
+        "pinIndex": 4
+    },
+    {
+        "name": "Клапан 3",
+        "pinIndex": 6
+    },
+    {
+        "name": "Клапан 4",
+        "pinIndex": 7
+    },
+    {
+        "name": "Клапан 5",
+        "pinIndex": 8
+    },
+    {
+        "name": "Клапан 6",
+        "pinIndex": 12
+    }
+]

@@ -3,43 +3,98 @@
 // Leave the above lines for propper jshinting
 //Type Node.js Here :)
 
-var address = '192.168.0.13';
+var address = '0.0.0.0';
 var port    = 80;
 var http    = require('http');
 var url     = require('url');
 var fs      = require('fs');
-//var iotkit  = require('iotkit-comm');
-//var dgram = require('dgram');
-//var client = dgram.createSocket('udp4');
+var qs      = require('querystring');
 
+var bottleConfigFileName = 'bottles.json';
+var coctailConfigFileName = 'coctails.json';
 
 var mraa = require('mraa'); //require mraa
 var urlobj;
 
-
-var bottlePins =  [ new mraa.Gpio(2), new mraa.Gpio(4), new mraa.Gpio(6),
-                    new mraa.Gpio(7), new mraa.Gpio(8), new mraa.Gpio(12) ];
-
-var pinReady       = new mraa.Gpio(13);
-
-function initPins()
-{
-    for(var i = 0; i < bottlePins.length; ++i)
-    {
-        bottlePins[i].dir(mraa.DIR_OUT);
-    }
-    pinReady.dir(mraa.DIR_OUT);
-}
-
-
 var STATES = {
     READY : {value: 1, name: "Ready",   comment: "Готов"},
-    BUSY  : {value: 2, name: "Busy",    comment: "Готовлю коктейль. Подождите пожалуйста.." },
+    BUSY  : {value: 2, name: "Busy",    comment: "Готовлю коктейль. Подождите пожалуйста..." },
     ERROR : {value: 3, name: "Error",   comment: "Ошибка. Проверьте уровень жидкости в бутылке!" },
 };
 
-var bottleState = [ STATES.READY, STATES.READY, STATES.READY, 
-                    STATES.READY, STATES.READY, STATES.READY ];
+//var bottleState = [ STATES.READY, STATES.READY, STATES.READY, 
+//                    STATES.READY, STATES.READY, STATES.READY ];
+//
+//var bottlePins =  [ new mraa.Gpio(2), new mraa.Gpio(4), new mraa.Gpio(6),
+//                    new mraa.Gpio(7), new mraa.Gpio(8), new mraa.Gpio(12) ];
+
+var pinReady       = new mraa.Gpio(13);
+
+var coctails = [];
+function loadCoctails(filename)
+{
+    console.log("Loading coctails");
+    
+    if(!fs.existsSync(filename))
+    {
+        console.log("Coctail file " + filename + " not found");        
+    }
+    else
+    {
+        var file = fs.readFileSync(filename);
+        
+        coctails = JSON.parse(file);
+        
+        console.log(coctails);
+            
+    }
+}
+
+var bottles = [];
+function loadBottles(filename)
+{
+    console.log("Loading bottles");
+    if (fs.existsSync(filename)) {
+        var file = fs.readFileSync(filename);
+        bottles = JSON.parse(file);
+        console.log(bottles);
+    }
+    else {
+        console.error("Bottles file " + filename + " not found");
+    }
+}
+
+function initBottlePins()
+{
+    for (var i = 0; i < bottles.length; ++i)
+    {
+        bottles[i].pinObject = new mraa.Gpio(bottles[i].pinIndex);
+        bottles[i].pinObject.dir(mraa.DIR_OUT);
+        bottles[i].state = STATES.READY;
+    }
+    
+    pinReady.dir(mraa.DIR_OUT);
+}
+
+var pinPWM;
+var state = 0;
+
+function initPWM()
+{
+    pinPWM = new mraa.Pwm(3);
+    pinPWM.enable(true);
+
+    //pinPWM.dir(mraa.DIR_OUT);
+}
+
+function initBarbotConfiguration()
+{
+    loadCoctails(site + '/' + coctailConfigFileName);
+    loadBottles(site + '/' + bottleConfigFileName);
+    initBottlePins();
+    initPWM();
+}
+
 // Object
 //  .table
 //  .min
@@ -78,36 +133,39 @@ var extensions =
 
 var files = 
 {
-"/"                 : true
-, "/index.html"     : true
-, "/favicon.ico"    : true
-, "/state"          : true
-, "/404.html"       : true 
-, "/button_pressed.png"       : true     
-, "/assets/css/app.css" : true
-, "/assets/css/bootstrap.css" : true
-, "/assets/css/main.css" : true
-, "/assets/css/responsive.css" : true
-, "/assets/extras/animate.css" : true
-, "/assets/fonts/glyphicons-halflings-regular.eot" : true
-, "/assets/fonts/glyphicons-halflings-regular.svg" : true
-, "/assets/fonts/glyphicons-halflings-regular.ttf" : true
-, "/assets/fonts/glyphicons-halflings-regular.woff" : true
-, "/assets/fonts/font-awesome/font-awesome.min.css" : true
-, "/assets/fonts/font-awesome/fontawesome-webfont.eot" : true
-, "/assets/fonts/font-awesome/fontawesome-webfont.svg" : true
-, "/assets/fonts/font-awesome/fontawesome-webfont.ttf" : true
-, "/assets/fonts/font-awesome/fontawesome-webfont.woff" : true
-, "/assets/fonts/font-awesome/FontAwesome.otf" : true
-, "/assets/img/backgrounds/feature-bg.jpg" : true
-, "/assets/img/backgrounds/hero-bg.jpg" : true
-, "/assets/img/features/graph.png" : true
-, "/assets/img/features/iPhone.png" : true
-, "/assets/js/bootstrap.js" : true
-, "/assets/js/jquery-min.js" : true
-, "/assets/js/main.js" : true
-, "/assets/js/smooth-scroll.js" : true
-, "/assets/js/wow.js" : true};
+    "/"                 : true,
+    "/index.html"     : true,
+    "/favicon.ico"    : true,
+    "/state"          : true,
+    "/makeCoctail"    : true,
+    "/getCoctails"    : true,
+    "/404.html"       : true,
+    "/button_pressed.png"       : true,
+    "/assets/css/app.css" : true,
+    "/assets/css/bootstrap.css" : true,
+    "/assets/css/main.css" : true,
+    "/assets/css/responsive.css" : true,
+    "/assets/extras/animate.css" : true,
+    "/assets/fonts/glyphicons-halflings-regular.eot" : true,
+    "/assets/fonts/glyphicons-halflings-regular.svg" : true,
+    "/assets/fonts/glyphicons-halflings-regular.ttf" : true,
+    "/assets/fonts/glyphicons-halflings-regular.woff" : true,
+    "/assets/fonts/font-awesome/font-awesome.min.css" : true,
+    "/assets/fonts/font-awesome/fontawesome-webfont.eot" : true,
+    "/assets/fonts/font-awesome/fontawesome-webfont.svg" : true,
+    "/assets/fonts/font-awesome/fontawesome-webfont.ttf" : true,
+    "/assets/fonts/font-awesome/fontawesome-webfont.woff" : true,
+    "/assets/fonts/font-awesome/FontAwesome.otf" : true,
+    "/assets/img/backgrounds/feature-bg.jpg" : true,
+    "/assets/img/backgrounds/hero-bg.jpg" : true,
+    "/assets/img/features/graph.png" : true,
+    "/assets/img/features/iPhone.png" : true,
+    "/assets/js/bootstrap.js" : true,
+    "/assets/js/jquery-min.js" : true,
+    "/assets/js/main.js" : true,
+    "/assets/js/smooth-scroll.js" : true,
+    "/assets/js/wow.js" : true
+};
 
 var site = "/node_app_slot";
 
@@ -142,28 +200,86 @@ function isSiteFile(filename)
     return files[filename];
 }
 
+function processGetState(req, res)
+{
+    // Sensors data
+    console.log("State data request");
+
+    res.statusCode = 200;
+    res.setHeader('Content-Type', 'text/json');
+
+    //console.log(currState.comment);
+
+    var currState = getCurrentState();
+
+    res.end(JSON.stringify(
+            {   
+                state       :   currState.comment,
+                state_code  :   currState.value,
+                bottle1     :   bottles[0].state.value,
+                bottle2     :   bottles[1].state.value,                    
+                bottle3     :   bottles[2].state.value,                    
+                bottle4     :   bottles[3].state.value,
+                bottle5     :   bottles[4].state.value,                    
+                bottle6     :   bottles[5].state.value,                    
+            }
+        ));
+}
+
+function processIndex(req, res)
+{
+    // default page
+    console.log("main page");
+
+    if(!fs.existsSync(site + urlobj.pathname))
+    {
+        console.log("main page not found");
+        pageNotFound(res);
+    }
+    else
+    {
+        console.log("main page found");
+
+        res.statusCode = 200;
+        res.setHeader('content-type', getContentType(urlobj.pathname));
+
+        res.end(fs.readFileSync(site + urlobj.pathname, {encoding: null}));
+    }    
+}
+
+function processGetCoctails(req, res)
+{
+    console.log("Process: get coctails");
+    
+    res.statusCode = 200;
+    var coctailsViewData = [];
+    for (var i = 0; i < coctails.length; ++i) {
+        coctailsViewData.push({index: i, name: coctails[i].name});
+    }
+    
+    res.setHeader('content-type', 'application/json');    
+    res.end(JSON.stringify(coctailsViewData));
+}
 
 function requestHandler(req, res)
 {
+    console.log("Processing request");
     urlobj = url.parse(req.url, true);
     //console.log("Request:" + urlobj.pathname);
 
-    if (!isSiteFile(urlobj.pathname)) 
-    {
+    if (!isSiteFile(urlobj.pathname))  {
         console.log(urlobj.pathname + " is not site file");
         
         pageNotFound(res);
         return;
     }
 
-    if (req.method === 'POST') 
-    {
-        //handlePostRequest(req, res);
+    if (req.method === 'POST')  {
+        handlePostRequest(req, res);
         return;
     }
     
-    if (!urlobj.pathname || urlobj.pathname === '/')
-    {
+    if (!urlobj.pathname || urlobj.pathname === '/') {
         // redirect to main page
         console.log("Redirect to main page");
         
@@ -171,69 +287,16 @@ function requestHandler(req, res)
         res.setHeader('Location', '/index.html');
         res.end();
     }
-    else if(urlobj.pathname == "/index.html")
-    {
-        // default page
-        console.log("main page");
-        
-        if(!fs.existsSync(site + urlobj.pathname))
-        {
-            console.log("main page not found");
-            pageNotFound(res);
-        }
-        else
-        {
-            console.log("main page found");
-            
-            res.statusCode = 200;
-            res.setHeader('content-type', getContentType(urlobj.pathname));
-        
-            res.end(fs.readFileSync(site + urlobj.pathname, {encoding: null}));
-        }
-        
-        if(typeof urlobj.query !== 'undefined' && urlobj.query)
-        {
-            console.log(urlobj.query);
-            
-            if(isNumeric(urlobj.query.coctail))
-            {
-                var  coc_idx = urlobj.query.coctail;
-                
-                if((coc_idx >= 0) && (coc_idx < coctails.length))
-                {
-                    makeCoctail(coc_idx);
-                }
-            }
-        }
+    else if(urlobj.pathname == "/index.html") {
+        processIndex(req, res);
     }
-
-    else if(urlobj.pathname === "/state")
-    {
-        // Sensors data
-        console.log("State data request");
-        
-        res.statusCode = 200;
-        res.setHeader('Content-Type', 'text/json');
-    
-        //console.log(currState.comment);
-        
-        var currState = getCurrentState();
-        
-        res.end(JSON.stringify(
-                {   
-                    state       :   currState.comment,
-                    state_code  :   currState.value,
-                    bottle1     :   bottleState[0].value,
-                    bottle2     :   bottleState[1].value,                    
-                    bottle3     :   bottleState[2].value,                    
-                    bottle4     :   bottleState[3].value,
-                    bottle5     :   bottleState[4].value,                    
-                    bottle6     :   bottleState[5].value,                    
-                }
-            ));
+    else if(urlobj.pathname === "/state") {
+        processGetState(req, res);
     }
-    else if(fs.existsSync(site + urlobj.pathname))
-    {
+    else if (urlobj.pathname === "/getCoctails") {
+        processGetCoctails(req, res);
+    }
+    else if(fs.existsSync(site + urlobj.pathname)) {
         // images, css, scripts
         console.log("File found");
         
@@ -241,19 +304,12 @@ function requestHandler(req, res)
         res.setHeader('content-type', getContentType(urlobj.pathname));
         res.end(fs.readFileSync(site + urlobj.pathname, {encoding: null}));
     }
-    else
-    {
+    else {
         console.log("File not found");
         
         pageNotFound(res);
     }
 }
-
-function isNumeric(n) 
-{
-  return !isNaN(parseFloat(n)) && isFinite(n);
-}
-
 
 var blinkState = true;
 
@@ -278,19 +334,36 @@ function showCurrentState()
     }
     
     setTimeout(showCurrentState, timeout); 
-
 }
-
 
 function handlePostRequest(req, res)
 {
-    console.log("POST" + urlobj.pathname);
-    console.log(urlobj.query);
-  
-    if(urlobj.pathname === "/do")
+    console.log("POST " + urlobj.pathname);
+    
+    if(urlobj.pathname === "/makeCoctail")
     {
-        console.log( urlobj.query);
-        
+        var requestBody = "";
+        console.log(urlobj.query);
+        req.on('data', function(chunk) {
+            console.log("Received body data: "+ chunk.toString());
+            requestBody += chunk;
+        });
+    
+        req.on('end', function() {
+            var formData = qs.parse(requestBody);
+            var coc_idx = parseInt(formData.coctail, 10);
+
+            if ((coc_idx >= 0) && (coc_idx < coctails.length)) {
+                makeCoctail(coc_idx);
+            }
+            else {
+                console.log("Error: invalid coctail id: " + coc_idx);
+            }
+            
+            res.statusCode = 200;
+            res.end(JSON.stringify({state: getCurrentState()}));
+        });
+
     }
     else
     {
@@ -299,38 +372,17 @@ function handlePostRequest(req, res)
         
 }
 
-
-var coctails = [];
-function loadCoctails(filename)
-{
-    if(!fs.existsSync(filename))
-    {
-        console.log("Coctail file " + filename + " not found");        
-    }
-    else
-    {
-        
-        var file = fs.readFileSync(filename);
-        
-        coctails = JSON.parse(file);
-        
-        console.log(coctails);
-            
-    }
-    
-}
-
 function getCurrentState()
 {
     var currState = STATES.READY;
         
-    for(var i = 0; i < bottleState.length; ++i)
+    for(var i = 0; i < bottles.length; ++i)
     {
-        if(bottleState[i] === STATES.BUSY)       
+        if(bottles[i].state === STATES.BUSY)       
         {
             currState = STATES.BUSY;        
         }
-        else if (bottleState[i] === STATES.ERROR)
+        else if (bottles[i].state === STATES.ERROR)
         {
             currState = STATES.ERROR;        
         }
@@ -344,11 +396,15 @@ var stepIdx = 0;
 var cocIdx = 0;
 function makeCoctail(coctailId)
 {
-    if(getCurrentState() == STATES.READY)
-    {
+    console.log("Starting making coctail: " + coctailId);
+    
+    if (getCurrentState() == STATES.READY) {
         cocIdx = coctailId;
         stepIdx = 0; 
         doCoctailStep();
+    }
+    else {
+        console.error("Barbot is busy. Please, wait until it finishes its work");
     }
 }
 
@@ -356,36 +412,44 @@ function doCoctailStep()
 {
     var step;
     var prevStep;
+    var prevIdx;
     
     if((stepIdx === coctails[cocIdx].formula.length) && (stepIdx > 0))
-    {
+    {    
         prevStep = coctails[cocIdx].formula[stepIdx-1];
-        bottlePins[parseInt(prevStep.bottle)-1].write(0);
-        bottleState[parseInt(prevStep.bottle)-1] = STATES.READY;
-        console.log ("Pin off " + prevStep.bottle);
+        
+        prevIdx = parseInt(prevStep.bottle);
+        
+        bottles[prevIdx-1].pinObject.write(0);
+        bottles[prevIdx-1].state = STATES.READY;
+        console.log("Pin off " + prevStep.bottle);
     }
     else if( (stepIdx >= 0) && (stepIdx < coctails[cocIdx].formula.length) )
     {
         step = coctails[cocIdx].formula[stepIdx];
-        var     idx = -1;
+        var idx = -1;
         
         if(stepIdx > 0)
         {
             prevStep = coctails[cocIdx].formula[stepIdx-1];
+
+            prevIdx = parseInt(prevStep.bottle);
             
-            bottlePins[parseInt(prevStep.bottle)-1].write(0);
+            bottles[prevIdx-1].pinObject.write(0);
             
-            idx = parseInt(prevStep.bottle)-1;
+            idx = prevIdx-1;
             
-            console.log ("Pin off " + prevStep.bottle);
+            console.log("Pin off " + prevStep.bottle);
         }
-        console.log ("Pin on " + step.bottle + " for " + step.duration + " ms")
-        bottlePins[parseInt(step.bottle)-1].write(1);
-        bottleState[parseInt(step.bottle)-1] = STATES.BUSY;
+        var curIdx = parseInt(step.bottle);
         
-        if(idx !== -1)
+        console.log ("Pin on " + step.bottle + " for " + step.duration + " ms");
+        bottles[curIdx-1].pinObject.write(1);
+        bottles[curIdx-1].state = STATES.BUSY;
+        
+        if (idx !== -1)
         {
-            bottleState[idx] = STATES.READY;
+            bottles[idx].state = STATES.READY;
         }
         
         setTimeout(doCoctailStep, step.duration);
@@ -394,18 +458,9 @@ function doCoctailStep()
     }
 }
 
-initPins();
+initBarbotConfiguration();
 
 showCurrentState();
-
-loadCoctails(site + "/coctails.json");
-
-var pinPWM       = new mraa.Pwm(3);
-pinPWM.enable(true);
-var state = 0;
-
-//pinPWM.dir(mraa.DIR_OUT);
-
 
 setTimeout(doPWM, 0);
 
@@ -424,4 +479,4 @@ function doPWM()
 //pinPWM.write(25);
 
 
-http.createServer(requestHandler).listen(port, address);
+http.createServer(requestHandler).listen(port);
