@@ -247,7 +247,7 @@ background: url(../img/backgrounds/hero-bg.jpg) fixed;
   margin-right: 25px;
 }
 #features .box-item {
-  padding-bottom: 40px;
+  padding-bottom: 20px;
 }
 #features .box-item .icon {
   background: #3498db;
@@ -282,12 +282,7 @@ background: url(../img/backgrounds/hero-bg.jpg) fixed;
 #features .box-item:hover .icon {
   background: #2980b9;
 }
-/* #features .box-item:hover .icon i {
-  color: #ffffff;
-} */
-#features .show-box {
-  padding: 22px 64px;
-}
+
 #bottom {
   background: #333;
   color: #fff;
@@ -342,101 +337,124 @@ background: url(../img/backgrounds/hero-bg.jpg) fixed;
   color: #fff;
 }
 .bottle {
-		font-size: 10em;
-		position: relative;
-		left: 50%;
-		top: 100%;
-		
-	
+        font-size: 10em;
+        position: relative;
+        left: 50%;
+        top: 100%;
+
+
 }
 .show-box {
-		min-height: 300px;
-	
+        min-height: 300px;
+
 }
 @media (max-width: 534px) {
-		.bottle {
-		position: relative;
-		left: -100%;
-		top: 200%;
-		
-	
+        .bottle {
+        position: relative;
+        left: -100%;
+        top: 200%;
+
+
 }
-	
+
 }
 
 
 .b_ready {
-	background-color: #fff !important;
+    background-color: #fff !important;
 }
 .b_busy {
-		
-	background-color: #ffff00 !important;
+
+    background-color: #ffff00 !important;
 }
 .b_error {
-	background-color: #ff0000 !important;
-	
+    background-color: #ff0000 !important;
+
 }
 .b_error i {
-		color: #fff !important;
-	
+        color: #fff !important;
+
 }
 .g_ready, .g_busy, .g_error {
-		position: relative;
-	
+        position: relative;
+
 }
 .g_busy {
-		color: #ffff00;
-	
+        color: #ffff00;
+
 }
 .g_error {
-		color: #ff0000;
-	
+        color: #ff0000;
+
 }
 .g_ready:after {
-		content: "готов";
-		position: absolute;
-		color: #fff;
-		display: block;
-		height: 30px;
-		width: 200px;
-		margin: 0 auto;
-		top: 100%;
-		left: -20%;
-		font-size: 0.3em;
-		text-align: center;
-		
+        content: "готов";
+        position: absolute;
+        color: #fff;
+        display: block;
+        height: 30px;
+        width: 200px;
+        margin: 0 auto;
+        top: 100%;
+        left: -20%;
+        font-size: 0.3em;
+        text-align: center;
+
 }
 .g_busy:after {
-		content: "наливаем";
-		position: absolute;
-		color: #ffff00;
-		display: block;
-		height: 30px;
-		width: 200px;
-		margin: 0 auto;
-		top: 100%;
-		left: -20%;
-		font-size: 0.3em;
-		text-align: center;
+        content: "наливаем";
+        position: absolute;
+        color: #ffff00;
+        display: block;
+        height: 30px;
+        width: 200px;
+        margin: 0 auto;
+        top: 100%;
+        left: -20%;
+        font-size: 0.3em;
+        text-align: center;
 }
 .g_error:after {
-		content: "готово";
-		position: absolute;
-		color: #ff0000;
-		display: block;
-		height: 30px;
-		width: 200px;
-		margin: 0 auto;
-		top: 100%;
-		left: -20%;
-		font-size: 0.3em;
-		text-align: center;
+        content: "готово";
+        position: absolute;
+        color: #ff0000;
+        display: block;
+        height: 30px;
+        width: 200px;
+        margin: 0 auto;
+        top: 100%;
+        left: -20%;
+        font-size: 0.3em;
+        text-align: center;
 }
 .navbar-default {
 
 }
 
-
 button:disabled {
-		background: #dddddd;
+        background: #dddddd;
+}
+
+.bottleRow {
+    padding-top: 20px;
+}
+
+.bottleRow .col-md-4 {
+    height:140px;
+}
+
+.container .row {
+    padding:0px 0px;
+}
+
+.glassRow {
+    padding-top: 0px;
+}
+
+#glass {
+    margin-left:-60px;
+}
+
+#state {
+    color:#fff;
 }

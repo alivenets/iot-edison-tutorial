@@ -1,322 +1,304 @@
-<html lang="ru">
+  <html lang="ru">
 
-<head>
-  <meta charset="utf-8">
-  <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
-   
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Barbot - nau-ra.ru</title>
+  <head>
+    <meta charset="utf-8">
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
 
-  <!-- Bootstrap -->
-  <link rel="stylesheet" type="text/css" href="assets/css/bootstrap.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Barbot - nau-ra.ru</title>
 
-  <!-- Main Style -->
-  <link rel="stylesheet" type="text/css" href="assets/css/main.css">
+    <!-- Bootstrap -->
+    <link rel="stylesheet" type="text/css" href="assets/css/bootstrap.css">
 
-  <!-- Responsive Style -->
-  <link rel="stylesheet" type="text/css" href="assets/css/responsive.css">
+    <!-- Main Style -->
+    <link rel="stylesheet" type="text/css" href="assets/css/main.css">
 
-  <!--Icon Font-->
-  <link rel="stylesheet" media="screen" href="assets/fonts/font-awesome/font-awesome.min.css" />
+    <!-- Responsive Style -->
+    <link rel="stylesheet" type="text/css" href="assets/css/responsive.css">
 
-
-  <!-- Extras -->
-  <link rel="stylesheet" type="text/css" href="assets/extras/animate.css">
+    <!--Icon Font-->
+    <link rel="stylesheet" media="screen" href="assets/fonts/font-awesome/font-awesome.min.css" />
 
 
-  <!-- jQuery Load -->
-  <script src="assets/js/jquery-min.js"></script>
-  <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- Extras -->
+    <link rel="stylesheet" type="text/css" href="assets/extras/animate.css">
 
-  <!--[if lt IE 9]>
-          <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-          <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
-        <![endif]-->
-    
- <!--  твой скрипт -->
-  
-  <script>
-    var GET_STATE_INTERVAL = 500;
-    var prev_state = -1;
- 
-    function initCoctailList()
-    {
-         var form = document.getElementById("coctail_list");
-         getState();
-    }
-     
-     function mark(id, prefix, status)
-     {
-         var element = document.getElementById(id);
-         
-         if(status === 1)
-         {
-           if (!element.classList.contains(prefix + "ready") )
+
+    <!-- jQuery Load -->
+    <script src="assets/js/jquery-min.js"></script>
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+
+    <!--[if lt IE 9]>
+            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+            <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+          <![endif]-->
+
+    <script>
+      var WEB_DEBUG = 0;
+      var GET_STATE_INTERVAL = 200;
+      var prev_state = -1;
+
+       function mark(id, prefix, status)
+       {
+           var element = document.getElementById(id);
+
+           if(status === 1)
            {
-              element.classList.add(prefix + "ready");
-           }
-             
-           if (element.classList.contains(prefix + "busy") )
-           {
-              element.classList.remove(prefix + "busy");
-           }
+             if (!element.classList.contains(prefix + "ready") )
+             {
+                element.classList.add(prefix + "ready");
+             }
 
-           if (element.classList.contains(prefix + "error") )
-           {
-              element.classList.remove(prefix + "error");
-           }
-         }
-         else if(status === 2)
-         {
-           if (element.classList.contains(prefix + "ready") )
-           {
-              element.classList.remove(prefix + "ready");
-           }
-             
-           if (!element.classList.contains(prefix + "busy") )
-           {
-              element.classList.add(prefix + "busy");
-           }
+             if (element.classList.contains(prefix + "busy") )
+             {
+                element.classList.remove(prefix + "busy");
+             }
 
-           if (element.classList.contains(prefix + "error") )
-           {
-              element.classList.remove(prefix + "error");
+             if (element.classList.contains(prefix + "error") )
+             {
+                element.classList.remove(prefix + "error");
+             }
            }
-         }
-         else if (status === 3)
-         {
-           if (element.classList.contains(prefix + "ready") )
+           else if(status === 2)
            {
-              element.classList.remove(prefix + "ready");
-           }
-             
-           if (element.classList.contains(prefix + "busy") )
-           {
-              element.classList.remove(prefix + "busy");
-           }
+             if (element.classList.contains(prefix + "ready") )
+             {
+                element.classList.remove(prefix + "ready");
+             }
 
-           if (!element.classList.contains(prefix + "error") )
-           {
-              element.classList.add(prefix + "error");
+             if (!element.classList.contains(prefix + "busy") )
+             {
+                element.classList.add(prefix + "busy");
+             }
+
+             if (element.classList.contains(prefix + "error") )
+             {
+                element.classList.remove(prefix + "error");
+             }
            }
-         }
-     }
-     
-    function getState() 
-    {
-        var request = new XMLHttpRequest();
-        request.onreadystatechange = function() {
-        if (request.readyState == 4 && request.status == 200) 
-        {
-            var data = JSON.parse(request.responseText);
-          
-            var element = document.getElementById("state");
-          
-            mark("glass",  "g_", data.state_code);
-            
-            mark("bottle1", "b_", data.bottle1);
-            mark("bottle2", "b_", data.bottle2);
-            mark("bottle3", "b_", data.bottle3);
-            mark("bottle4", "b_", data.bottle4);
-            mark("bottle5", "b_", data.bottle5);
-            mark("bottle6", "b_", data.bottle6);
-      
-            for(var i = 0; i < 6; ++i)
-            {
-               var btn = document.getElementById("make_coctail_" + i);
-               btn.disabled = (data.state_code != 1);
-            }
-            
-            var need_show = ((data.state_code == 1) && (prev_state == 2));
-            prev_state = data.state_code;
-            
-            if(need_show)
-            {
-                for(var i = 0; i < 6; ++i)
-                {
-                    var btn = document.getElementById("make_coctail_" + i);
-                    btn.classList.remove("pressed");
-                }
-                
-                alert("Заберите свой коктейль");
-            }
+           else if (status === 3)
+           {
+             if (element.classList.contains(prefix + "ready") )
+             {
+                element.classList.remove(prefix + "ready");
+             }
+
+             if (element.classList.contains(prefix + "busy") )
+             {
+                element.classList.remove(prefix + "busy");
+             }
+
+             if (!element.classList.contains(prefix + "error") )
+             {
+                element.classList.add(prefix + "error");
+             }
+           }
+       }
+
+      function getState()
+      {
+          var request = new XMLHttpRequest();
+          request.onreadystatechange = function() {
+              if (request.readyState == 4 && request.status == 200) {
+                  var data = JSON.parse(request.responseText);
+
+                  var element = document.getElementById("state");
+                  element.textContent = data.state;
+
+                  mark("glass",  "g_", data.state_code);
+
+                  mark("bottle1", "b_", data.bottle1);
+                  mark("bottle2", "b_", data.bottle2);
+                  mark("bottle3", "b_", data.bottle3);
+                  mark("bottle4", "b_", data.bottle4);
+                  mark("bottle5", "b_", data.bottle5);
+                  mark("bottle6", "b_", data.bottle6);
+
+                  for(var i = 0; i < 6; ++i)
+                  {
+                     var btn = document.getElementById("make_coctail_" + i);
+                     if ( btn )
+                        btn.disabled = (data.state_code != 1);
+                  }
+
+                  var need_show = ((data.state_code == 1) && (prev_state == 2));
+                  prev_state = data.state_code;
+
+                  if(need_show)
+                  {
+                      for(var i = 0; i < 6; ++i)
+                      {
+                          var btn = document.getElementById("make_coctail_" + i);
+                          btn.classList.remove("pressed");
+                      }
+                  }
+              }
+          }
+
+          request.open('GET', '/state', true);
+          request.send();
+      }
+
+      function makeCoctail(CocId)
+      {
+          var request = new XMLHttpRequest();
+          request.onreadystatechange = function() {
+
+              if (request.readyState == 4 && request.status == 200) {
+                  var data = JSON.parse(request.responseText);
+
+                  var element = document.getElementById("state");
+                  element.textContent = data.state;
+
+                  var btn = document.getElementById("make_coctail_" + CocId);
+                  btn.disabled = (data.state_code != 1);
+              }
+          };
+
+          var btn_pressed = document.getElementById("make_coctail_" + CocId);
+          btn_pressed.classList.add("pressed");
+
+          request.open('POST', '/makeCoctail', true);
+          request.send("coctail=" + CocId);
+      }
+
+      function fillCoctailsHtml(coctailData)
+      {
+          var buttonContainer = document.getElementById("coctailButtonGrid")
+          var buttonHtml = '';
+          buttonHtml += '<div class="row coctailRow text-center">';
+
+          for (var i = 0; i < coctailData.length; ++i) {
+              buttonHtml += '<div class="col-md-4"><button class="btn btn-border btn-lg wow fadeInDown animated" id="make_coctail_' + coctailData[i].index + '" onclick="makeCoctail(' + coctailData[i].index + ')" data-wow-offset="10" href="#"><i class="fa fa-check-circle "></i>';
+              buttonHtml += coctailData[i].name;
+              buttonHtml += '</button></div>';
+          }
+          buttonHtml += '</div>';
+          document.getElementById('coctailButtonGrid').innerHTML = buttonHtml;
+      }
+
+      function loadCoctails()
+      {
+          if (WEB_DEBUG == 0) {
+              var request = new XMLHttpRequest();
+              request.onreadystatechange = function() {
+                  if (request.readyState == 4 && request.status == 200) {
+                      var coctailData = JSON.parse(request.responseText);
+                      fillCoctailsHtml(coctailData);
+                  }
+              };
+
+              request.open('GET', 'getCoctails', true);
+              request.send();
+          }
+          else {
+              coctailData = [{index: 0, name: "Coctail 1"}, {index: 1, name: "Coctail 2"}, {index: 2, name: "Coctail 3"}];
+              fillCoctailsHtml(coctailData);
+          }
+
+      }
+      function fillBottlesHtml(bottleData)
+      {
+          var divContainer = document.getElementById("bottleDivGrid")
+          var bottleHtml = '';
+
+          bottleHtml += '<div class="row bottleRow text-center wow fadeInLeft animated" data-wow-offset="10">';
+
+          for (var i = 0; i < bottleData.length; ++i) {
+              bottleHtml += '<div class="col-md-4 box-item left"><span id="bottle' + bottleData[i].index + '" class="icon b_ready"><i class="fa fa-flask"></i></span><div class="text">';
+              bottleHtml += "<h4>" + bottleData[i].name + "</h4>";
+              bottleHtml += '</div></div>';
+          }
+
+          bottleHtml += '</div>';
+
+          document.getElementById('bottleDivGrid').innerHTML = bottleHtml;
+      }
+
+      function loadBottles()
+      {
+        if (WEB_DEBUG == 0) {
+          var request = new XMLHttpRequest();
+          request.onreadystatechange = function() {
+              if (request.readyState == 4 && request.status == 200) {
+                  var bottleData = JSON.parse(request.responseText);
+                  fillBottlesHtml(bottleData);
+              }
+          };
+
+          request.open("GET", "getBottles", true);
+          request.send();
         }
-    }
-    
-    request.open('GET', '/state', true);
-    request.send();
-  }
-     
-    function makeCoctail(CocId)
-    {
-        var request = new XMLHttpRequest();
-        request.onreadystatechange = function() {
-        
-            if (request.readyState == 4 && request.status == 200) {
-                var data = JSON.parse(request.responseText);
-          
-                var element = document.getElementById("state");
-                element.textContent = data.state;
-          
-                var btn = document.getElementById("make_coctail");
-                btn.disabled = (data.state_code != 1);
-            }
-        };
-        
-        var btn_pressed = document.getElementById("make_coctail_" + CocId);
-        btn_pressed.classList.add("pressed");
-        
-        request.open('POST', '/makeCoctail', true);
-        request.send("coctail=" + CocId);
-     }
-    function loadCoctails()
-    {
-        var request = new XMLHttpRequest();
-        request.onreadystatechange = function() {
-            if ( request.readyState == 4 && request.status == 200) {
-                var coctailData = JSON.parse(request.responseText);
-                var buttonContainer = document.getElementById("coctailButtonGrid")
-                var buttonHtml = '';
-                for (var i = 0; i < coctailData.length; ++i) {
-                    if (i % 3 == 0) {
-                        buttonHtml += '<div class="col-md-12 text-center">';
-                    }
+        else {
+          bottleData = [{index: 0, name: "Bottle 1"},
+                        {index: 1, name: "Bottle 2"},
+                        {index: 2, name: "Bottle 3"},
+                        {index: 3, name: "Bottle 4"},
+                        {index: 4, name: "Bottle 5"},
+                        {index: 5, name: "Bottle 6"}];
 
-                    buttonHtml += '<button class="btn btn-border btn-lg wow fadeInDown animated" id="make_coctail_' + coctailData[i].index + '" onclick="makeCoctail(' + coctailData[i].index + ')" data-wow-offset="10" href="#"><i class="fa fa-check-circle "></i>';
-                    buttonHtml += coctailData[i].name;
-                    buttonHtml += '</button>';
-                    
-                    if (i % 3 == 2) {
-                        buttonHtml += '</div>';
-                    }
-                }
-                document.getElementById('coctailButtonGrid').innerHTML = buttonHtml;
-            }
+          fillBottlesHtml(bottleData);
         }
-        request.open('GET', 'getCoctails', true);
-        request.send();
-    }
-      
-    $(document).ready(function() {
-        loadCoctails();
-        window.setInterval(getState, GET_STATE_INTERVAL);        
-    });
-      
- </script>
-    
+      }
 
-</head>
+      $(document).ready(function() {
+          loadCoctails();
+          loadBottles();
+          getState();
+          window.setInterval(getState, GET_STATE_INTERVAL);
+      });
 
-<body onload="getState()">
-  <!-- Nav Menu Section -->
-  <div class="logo-menu">
-    <nav class="navbar navbar-default">
-      <div class="container">
-        <!-- Brand and toggle get grouped for better mobile display -->
-        <div class="navbar-header col-md-3">
-          <a class="navbar-brand" href="index.html"><img src="favicon.ico" alt=""><!-- i class="fa fa-fa fa-cubes"> </i>-->BarBot</a>
-        </div>
-        </div>
-      </div>
-    </nav>
-  </div>
+   </script>
+  </head>
 
+  <body>
 
-  <section id="features">
-    <div class="container">
-      <div class="row">
-        <h1 class="title-small wow tada">Bar Bot</h1>
-          <div id='coctailButtonGrid'></div>
-
-        <!--  левые бутылки -->
-        <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4">
-          <div class="content-left text-right wow fadeInLeft animated" data-wow-offset="10">
-            <div class="box-item left">
-              <span id="bottle1" class="icon b_ready">
-                <i  class="fa fa-flask"></i>
-              </span>
-              <div class="text">
-                <h4>ингредиент</h4>
-                <p>1</p>
-              </div>
-            </div>
-            <div class="box-item left">
-              <span id="bottle2" class="icon b_ready">
-                <i class="fa fa-flask"></i>
-              </span>
-              <div class="text">
-                <h4>ингредиент</h4>
-                <p>2</p>
-              </div>
-            </div>
-            <div class="box-item left">
-              <span id="bottle3" class="icon b_ready">
-                <i class="fa fa-flask"></i>
-              </span>
-              <div class="text">
-                <h4>ингредиент</h4>
-                <p>3</p>
-              </div>
-            </div>
+    <!-- Nav Menu Section -->
+    <div class="logo-menu">
+      <nav class="navbar navbar-default">
+        <div class="container">
+          <!-- Brand and toggle get grouped for better mobile display -->
+          <div class="navbar-header col-md-3">
+            <a class="navbar-brand" href="index.html"><img src="favicon.ico" alt=""><!-- i class="fa fa-fa fa-cubes"> </i>-->BarBot</a>
+          </div>
           </div>
         </div>
-		
-		<!-- левые бутылки -->
-		
-	<!-- 	рюмка  статус  -->
-		
-		
-        <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4">
+      </nav>
+    </div>
+
+    <section id="features">
+      <div class="container">
+        <div class="row">
+          <div id="coctailButtonGrid"></div>
+        </div>
+      </div>
+      <!-- 	рюмка  статус  -->
+      <div class="row glassRow text-center">
+        <div class="col-md-12">
           <div class="show-box wow fadeInDown animated" data-wow-offset="10">
             <span  class="icon">
                 <i id="glass" class="fa fa-glass bottle g_ready"></i>
               </span>
           </div>
-        </div>
-		
-		<!-- рюмка -->
-		
-		<!-- правые бутылки -->
-		
-        <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4">
-          <div class="content-right text-left wow fadeInRight animated" data-wow-offset="10">
-            <div class="box-item right">
-              <span id="bottle4" class="icon b_ready">
-                <i class="fa fa-flask"></i>
-              </span>
-              <div class="text">
-                <h4>ингредиент</h4>
-                <p>4</p>
-              </div>
-            </div>
-            <div class="box-item right">
-              <span id="bottle5" class="icon b_ready">
-                <i class="fa fa-flask"></i>
-              </span>
-              <div class="text">
-                <h4>ингредиент</h4>
-                <p>5</p>
-              </div>
-            </div>
-            <div class="box-item right">
-              <span id="bottle6" class="icon b_ready">
-                <i class="fa fa-flask"></i>
-              </span>
-              <div class="text">
-                <h4>ингредиент</h4>
-                <p>6</p>
-              </div>
-            </div>
-          </div>
+          <div id="state">&nbsp;</div>
         </div>
       </div>
-    </div>
-  </section>
-  <!-- Bootstrap JS -->
-  <script src="assets/js/bootstrap.js"></script>
-  <!-- WOW JS plugin for animation -->
-  <script src="assets/js/wow.js"></script>
-  <!-- All JS plugin Triggers -->
-  <script src="assets/js/main.js"></script>
-</body>
-</html>
+
+      <!-- рюмка -->
+      <div class="container">
+        <div class="row">
+          <div id="bottleDivGrid"></div>
+        </div>
+      </div>
+
+
+
+    </section>
+    <!-- Bootstrap JS -->
+    <script src="assets/js/bootstrap.js"></script>
+    <!-- WOW JS plugin for animation -->
+    <script src="assets/js/wow.js"></script>
+    <!-- All JS plugin Triggers -->
+    <script src="assets/js/main.js"></script>
+  </body>
+  </html>

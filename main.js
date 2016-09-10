@@ -9,6 +9,7 @@ var http    = require('http');
 var url     = require('url');
 var fs      = require('fs');
 var qs      = require('querystring');
+var sleep   = require('sleep');
 
 var bottleConfigFileName = 'bottles.json';
 var coctailConfigFileName = 'coctails.json';
@@ -22,31 +23,63 @@ var STATES = {
     ERROR : {value: 3, name: "Error",   comment: "Ошибка. Проверьте уровень жидкости в бутылке!" },
 };
 
-//var bottleState = [ STATES.READY, STATES.READY, STATES.READY, 
-//                    STATES.READY, STATES.READY, STATES.READY ];
-//
-//var bottlePins =  [ new mraa.Gpio(2), new mraa.Gpio(4), new mraa.Gpio(6),
-//                    new mraa.Gpio(7), new mraa.Gpio(8), new mraa.Gpio(12) ];
+var ENGINE_TIMEOUT = 500;
 
-var pinReady       = new mraa.Gpio(13);
+var MILLISECS_PER_MILLILITER = 135; //calibrated value
+
+function msToMl(millisecs)
+{
+    return millisecs / MILLISECS_PER_MILLILITER;
+}
+
+function mlToMs(milliliters)
+{
+    return milliliters * MILLISECS_PER_MILLILITER;
+}
+
+function activateEngine(pin1, level1, pin2, level2)
+{
+    pin1.write(level1);
+    pin2.write(level2);
+}
+
+function deactivateEngine(pin1, pin2)
+{
+    pin1.write(0);
+    pin2.write(0);
+}
+
+function openValve(pin1, pin2)
+{
+    activateEngine(pin1, 0, pin2, 1);
+
+    setTimeout(function() {
+        deactivateEngine(pin1, pin2);
+    }, ENGINE_TIMEOUT);
+}
+
+function closeValve(pin1, pin2)
+{
+    activateEngine(pin1, 1, pin2, 0);
+    sleep.usleep(ENGINE_TIMEOUT * 1000);
+    deactivateEngine(pin1, pin2);
+}
 
 var coctails = [];
 function loadCoctails(filename)
 {
     console.log("Loading coctails");
-    
-    if(!fs.existsSync(filename))
-    {
-        console.log("Coctail file " + filename + " not found");        
+
+    if(!fs.existsSync(filename)) {
+        console.log("Coctail file " + filename + " not found");
     }
-    else
-    {
+    else {
         var file = fs.readFileSync(filename);
-        
+
         coctails = JSON.parse(file);
-        
+
         console.log(coctails);
-            
+
     }
 }
 
@@ -66,25 +99,37 @@ function loadBottles(filename)
 
 function initBottlePins()
 {
-    for (var i = 0; i < bottles.length; ++i)
-    {
-        bottles[i].pinObject = new mraa.Gpio(bottles[i].pinIndex);
-        bottles[i].pinObject.dir(mraa.DIR_OUT);
+    console.log("Init bottle GPIO pins");
+
+    for (var i = 0; i < bottles.length; ++i) {
+        bottles[i].pinObj1 = new mraa.Gpio(bottles[i].pin1);
+        bottles[i].pinObj1.dir(mraa.DIR_OUT);
+        bottles[i].pinObj1.write(0);
+
+        bottles[i].pinObj2 = new mraa.Gpio(bottles[i].pin2);
+        bottles[i].pinObj2.dir(mraa.DIR_OUT);
+        bottles[i].pinObj2.write(0);
+
         bottles[i].state = STATES.READY;
     }
-    
-    pinReady.dir(mraa.DIR_OUT);
+
 }
 
-var pinPWM;
-var state = 0;
-
-function initPWM()
+function closeAllValves()
 {
-    pinPWM = new mraa.Pwm(3);
-    pinPWM.enable(true);
+    console.log("Close all valves");
+    //reset the valves to their initial state
+    for (var i = 0; i < bottles.length; ++i) {
+        console.log("Close valve " + i);
+        closeValve(bottles[i].pinObj1, bottles[i].pinObj2);
+        sleep.usleep(500000);
+    }
+}
 
-    //pinPWM.dir(mraa.DIR_OUT);
+function initPeripherals()
+{
+    console.log("Init peripherals");
+    closeAllValves();
 }
 
 function initBarbotConfiguration()
@@ -92,29 +137,10 @@ function initBarbotConfiguration()
     loadCoctails(site + '/' + coctailConfigFileName);
     loadBottles(site + '/' + bottleConfigFileName);
     initBottlePins();
-    initPWM();
+    setTimeout(initPeripherals(), 500);
 }
 
-// Object
-//  .table
-//  .min
-//  .max
-/*
-var tempTable       = {};
-var lightTable      = {};
-var pressTable      = {};
-var soilHumTable    = {};
-var airHumTable     = {};
-
-var temp        = 0;
-var ext_light   = 0;
-var press       = 0;
-var soil_hum    = 0;
-var int_light   = 0;
-var air_hum     = 0;
-*/
-
-var extensions = 
+var extensions =
 {
     "css"   : "text/css",
     "xml"   : "text/xml",
@@ -131,7 +157,7 @@ var extensions =
     "ico"   : "image/ico"
 };
 
-var files = 
+var files =
 {
     "/"                 : true,
     "/index.html"     : true,
@@ -139,6 +165,7 @@ var files =
     "/state"          : true,
     "/makeCoctail"    : true,
     "/getCoctails"    : true,
+    "/getBottles"     : true,
     "/404.html"       : true,
     "/button_pressed.png"       : true,
     "/assets/css/app.css" : true,
@@ -169,11 +196,10 @@ var files =
 
 var site = "/node_app_slot";
 
-function getContentType(filename) 
+function getContentType(filename)
 {
     var i = filename.lastIndexOf('.');
-    if (i < 0) 
-    {
+    if (i < 0)  {
         return 'application/octet-stream';
     }
     return extensions[filename.substr(i+1).toLowerCase()] || 'application/octet-stream';
@@ -182,16 +208,14 @@ function getContentType(filename)
 function pageNotFound(res)
 {
     res.statusCode = 404;
-    
-    if(fs.existsSync(site + "/404.html"))
-    {
+
+    if(fs.existsSync(site + "/404.html")) {
         res.setHeader('content-type', "text/html");
         res.end(fs.readFileSync(site + "/404.html", {encoding: null}));
     }
-    else
-    {
+    else {
         res.setHeader('content-type', "text/plain");
-        res.end("The page at " + urlobj.pathname + " was not found.");        
+        res.end("The page at " + urlobj.pathname + " was not found.");
     }
 }
 
@@ -208,20 +232,18 @@ function processGetState(req, res)
     res.statusCode = 200;
     res.setHeader('Content-Type', 'text/json');
 
-    //console.log(currState.comment);
-
     var currState = getCurrentState();
 
     res.end(JSON.stringify(
-            {   
+            {
                 state       :   currState.comment,
                 state_code  :   currState.value,
                 bottle1     :   bottles[0].state.value,
-                bottle2     :   bottles[1].state.value,                    
-                bottle3     :   bottles[2].state.value,                    
+                bottle2     :   bottles[1].state.value,
+                bottle3     :   bottles[2].state.value,
                 bottle4     :   bottles[3].state.value,
-                bottle5     :   bottles[4].state.value,                    
-                bottle6     :   bottles[5].state.value,                    
+                bottle5     :   bottles[4].state.value,
+                bottle6     :   bottles[5].state.value,
             }
         ));
 }
@@ -231,45 +253,53 @@ function processIndex(req, res)
     // default page
     console.log("main page");
 
-    if(!fs.existsSync(site + urlobj.pathname))
-    {
+    if(!fs.existsSync(site + urlobj.pathname)) {
         console.log("main page not found");
         pageNotFound(res);
     }
-    else
-    {
+    else {
         console.log("main page found");
 
         res.statusCode = 200;
         res.setHeader('content-type', getContentType(urlobj.pathname));
 
         res.end(fs.readFileSync(site + urlobj.pathname, {encoding: null}));
-    }    
+    }
 }
 
 function processGetCoctails(req, res)
 {
     console.log("Process: get coctails");
-    
+
     res.statusCode = 200;
     var coctailsViewData = [];
     for (var i = 0; i < coctails.length; ++i) {
         coctailsViewData.push({index: i, name: coctails[i].name});
     }
-    
-    res.setHeader('content-type', 'application/json');    
+
+    res.setHeader('content-type', 'application/json');
     res.end(JSON.stringify(coctailsViewData));
 }
 
+function processGetBottles(req, res)
+{
+    console.log("Process: get bottles");
+    res.statusCode = 200;
+    var bottlesViewData = [];
+    for (var i = 0; i < bottles.length; ++i) {
+        bottlesViewData.push({index: i+1, name: bottles[i].name});
+    }
+    res.setHeader('content-type', 'application/json');
+    res.end(JSON.stringify(bottlesViewData));
+}
 function requestHandler(req, res)
 {
     console.log("Processing request");
     urlobj = url.parse(req.url, true);
-    //console.log("Request:" + urlobj.pathname);
 
     if (!isSiteFile(urlobj.pathname))  {
         console.log(urlobj.pathname + " is not site file");
-        
+
         pageNotFound(res);
         return;
     }
@@ -278,11 +308,11 @@ function requestHandler(req, res)
         handlePostRequest(req, res);
         return;
     }
-    
+
     if (!urlobj.pathname || urlobj.pathname === '/') {
         // redirect to main page
         console.log("Redirect to main page");
-        
+
         res.statusCode = 301;
         res.setHeader('Location', '/index.html');
         res.end();
@@ -296,17 +326,20 @@ function requestHandler(req, res)
     else if (urlobj.pathname === "/getCoctails") {
         processGetCoctails(req, res);
     }
+    else if (urlobj.pathname === "/getBottles") {
+        processGetBottles(req, res);
+    }
     else if(fs.existsSync(site + urlobj.pathname)) {
         // images, css, scripts
         console.log("File found");
-        
+
         res.statusCode = 200;
         res.setHeader('content-type', getContentType(urlobj.pathname));
         res.end(fs.readFileSync(site + urlobj.pathname, {encoding: null}));
     }
     else {
         console.log("File not found");
-        
+
         pageNotFound(res);
     }
 }
@@ -316,39 +349,34 @@ var blinkState = true;
 function showCurrentState()
 {
     var timeout = 1000;
-    switch(getCurrentState())
-    {
+    switch(getCurrentState()) {
         case STATES.READY:
-            pinReady.write(1);
         break;
-            
+
         case STATES.BUSY:
-            pinReady.write(0);
         break;
-            
+
         case STATES.ERROR:
-            pinReady.write(blinkState ? 1 : 0);
-            blinkState = !blinkState; 
+            blinkState = !blinkState;
             timeout = 200;
         break;
     }
-    
-    setTimeout(showCurrentState, timeout); 
+
+    setTimeout(showCurrentState, timeout);
 }
 
 function handlePostRequest(req, res)
 {
     console.log("POST " + urlobj.pathname);
-    
-    if(urlobj.pathname === "/makeCoctail")
-    {
+
+    if(urlobj.pathname === "/makeCoctail") {
         var requestBody = "";
         console.log(urlobj.query);
         req.on('data', function(chunk) {
             console.log("Received body data: "+ chunk.toString());
             requestBody += chunk;
         });
-    
+
         req.on('end', function() {
             var formData = qs.parse(requestBody);
             var coc_idx = parseInt(formData.coctail, 10);
@@ -359,37 +387,32 @@ function handlePostRequest(req, res)
             else {
                 console.log("Error: invalid coctail id: " + coc_idx);
             }
-            
+
             res.statusCode = 200;
-            res.end(JSON.stringify({state: getCurrentState()}));
+            var state = getCurrentState();
+            res.end(JSON.stringify({state: state.comment, state_code: state.value}));
         });
 
     }
-    else
-    {
+    else {
         pageNotFound(res);
     }
-        
 }
 
 function getCurrentState()
 {
     var currState = STATES.READY;
-        
-    for(var i = 0; i < bottles.length; ++i)
-    {
-        if(bottles[i].state === STATES.BUSY)       
-        {
-            currState = STATES.BUSY;        
+
+    for(var i = 0; i < bottles.length; ++i) {
+        if(bottles[i].state === STATES.BUSY) {
+            currState = STATES.BUSY;
         }
-        else if (bottles[i].state === STATES.ERROR)
-        {
-            currState = STATES.ERROR;        
+        else if (bottles[i].state === STATES.ERROR) {
+            currState = STATES.ERROR;
         }
     }
-    
+
     return currState;
-    
 }
 
 var stepIdx = 0;
@@ -397,10 +420,10 @@ var cocIdx = 0;
 function makeCoctail(coctailId)
 {
     console.log("Starting making coctail: " + coctailId);
-    
+
     if (getCurrentState() == STATES.READY) {
         cocIdx = coctailId;
-        stepIdx = 0; 
+        stepIdx = 0;
         doCoctailStep();
     }
     else {
@@ -413,47 +436,49 @@ function doCoctailStep()
     var step;
     var prevStep;
     var prevIdx;
-    
-    if((stepIdx === coctails[cocIdx].formula.length) && (stepIdx > 0))
-    {    
+
+    if((stepIdx === coctails[cocIdx].formula.length) && (stepIdx > 0)) {
         prevStep = coctails[cocIdx].formula[stepIdx-1];
-        
         prevIdx = parseInt(prevStep.bottle);
-        
-        bottles[prevIdx-1].pinObject.write(0);
+
+        console.log("Close valve " + prevStep.bottle);
+
+        closeValve(bottles[prevIdx-1].pinObj1, bottles[prevIdx-1].pinObj2);
+
         bottles[prevIdx-1].state = STATES.READY;
-        console.log("Pin off " + prevStep.bottle);
     }
-    else if( (stepIdx >= 0) && (stepIdx < coctails[cocIdx].formula.length) )
-    {
+    else if( (stepIdx >= 0) && (stepIdx < coctails[cocIdx].formula.length) ) {
         step = coctails[cocIdx].formula[stepIdx];
         var idx = -1;
-        
-        if(stepIdx > 0)
-        {
+
+        if(stepIdx > 0) {
             prevStep = coctails[cocIdx].formula[stepIdx-1];
 
             prevIdx = parseInt(prevStep.bottle);
-            
-            bottles[prevIdx-1].pinObject.write(0);
-            
+
+            console.log("Close valve " + prevStep.bottle);
+
+            closeValve(bottles[prevIdx-1].pinObj1, bottles[prevIdx-1].pinObj2);
+
             idx = prevIdx-1;
-            
-            console.log("Pin off " + prevStep.bottle);
+
         }
         var curIdx = parseInt(step.bottle);
-        
-        console.log ("Pin on " + step.bottle + " for " + step.duration + " ms");
-        bottles[curIdx-1].pinObject.write(1);
+
+        var duration = mlToMs(step.volume);
+
+        console.log("Open valve " + step.bottle + " for " + duration + " ms (" + step.volume + " ml)");
+
+        openValve(bottles[curIdx-1].pinObj1, bottles[curIdx-1].pinObj2);
+
         bottles[curIdx-1].state = STATES.BUSY;
-        
-        if (idx !== -1)
-        {
+
+        if (idx !== -1) {
             bottles[idx].state = STATES.READY;
         }
-        
-        setTimeout(doCoctailStep, step.duration);
-                   
+
+        setTimeout(doCoctailStep, duration);
+
         stepIdx++;
     }
 }
@@ -461,22 +486,5 @@ function doCoctailStep()
 initBarbotConfiguration();
 
 showCurrentState();
-
-setTimeout(doPWM, 0);
-
-function doPWM()
-{
-    pinPWM.write(state/100.0);
-    
-    state += 25;
-    
-    state = state % 100;
-    
-    setTimeout(doPWM, 3000);
-}
-
-
-//pinPWM.write(25);
-
 
 http.createServer(requestHandler).listen(port);
